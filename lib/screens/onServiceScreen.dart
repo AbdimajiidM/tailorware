@@ -11,14 +11,14 @@ import 'package:tailorware/screens/widgets/ordersList.dart';
 import 'package:flutter_dialogs/flutter_dialogs.dart';
 import 'package:http/http.dart' as http;
 
-class PendingOrdersScreen extends StatefulWidget {
-  const PendingOrdersScreen({super.key});
+class OnServiceScreen extends StatefulWidget {
+  const OnServiceScreen({super.key});
 
   @override
-  State<PendingOrdersScreen> createState() => _PendingOrdersScreenState();
+  State<OnServiceScreen> createState() => _OnServiceScreenState();
 }
 
-class _PendingOrdersScreenState extends State<PendingOrdersScreen> {
+class _OnServiceScreenState extends State<OnServiceScreen> {
   late Future<Map> dataFuture;
   String? username;
   String? name;
@@ -45,6 +45,7 @@ class _PendingOrdersScreenState extends State<PendingOrdersScreen> {
     await prefs.remove('userId');
     await prefs.remove('username');
     await prefs.remove('name');
+    await prefs.remove('remember');
 
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
@@ -58,7 +59,7 @@ class _PendingOrdersScreenState extends State<PendingOrdersScreen> {
   void initState() {
     super.initState();
     fetchUser();
-    dataFuture = fetchPendingOrders();
+    dataFuture = fetchOnServericeOrders();
   }
 
   @override
@@ -66,7 +67,7 @@ class _PendingOrdersScreenState extends State<PendingOrdersScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.green,
         automaticallyImplyLeading: false,
         elevation: 2,
         title: Text("Tailorware"),
@@ -75,7 +76,7 @@ class _PendingOrdersScreenState extends State<PendingOrdersScreen> {
             padding: EdgeInsets.all(15.0),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
+                backgroundColor: Colors.green,
                 elevation: 1,
               ),
               onPressed: () {
@@ -135,10 +136,11 @@ class _PendingOrdersScreenState extends State<PendingOrdersScreen> {
                 );
               } else if (snapshot.hasData) {
                 // return Pending Orders
+
                 return OdersList(
                   orders: snapshot.data!['data']['orders'],
-                  title: "Pending Orders",
-                  color: Colors.blue,
+                  title: "On-Service Orders",
+                  color: Colors.green,
                 );
               } else {
                 return const Center(
@@ -154,13 +156,16 @@ class _PendingOrdersScreenState extends State<PendingOrdersScreen> {
     );
   }
 
-  Future<Map> fetchPendingOrders() async {
+  Future<Map> fetchOnServericeOrders() async {
     final prefs = await SharedPreferences.getInstance();
     var server = prefs.getString('server');
+    var userId = prefs.getString('userId');
+
     final response = await http.get(
-      Uri.parse('http://$server/api/v1/orders'),
+      Uri.parse('http://$server/api/v1/orders/on-serive-orders/$userId'),
     );
 
+    print(json.decode(response.body));
     if (response.statusCode == 200) {
       return json.decode(response.body);
     } else {

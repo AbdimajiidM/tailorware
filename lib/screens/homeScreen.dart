@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:tailorware/screens/onServiceScreen.dart';
 import 'package:tailorware/screens/pendingOrdersScreen.dart';
 import 'package:tailorware/screens/loginScreen.dart';
 import 'package:tailorware/screens/orderDetailScreen.dart';
@@ -19,15 +20,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final _pageOptions = [
     PendingOrdersScreen(),
-    OrderDetailScreen(),
-    PendingOrdersScreen()
+    OnServiceScreen(),
+    OnServiceScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'Tailorware',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),

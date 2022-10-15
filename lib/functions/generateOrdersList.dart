@@ -27,11 +27,12 @@ List<Order> generateOrdersList(orders) {
       );
     }
     var customer = order['customer'];
+
     ordersList.add(
       Order(
         orderNumber: order['orderNumber']!,
         name: order['name']!,
-        customerName: customer['name'],
+        customerName: customer!['name'],
         services: services,
       ),
     );

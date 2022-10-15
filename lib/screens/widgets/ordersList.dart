@@ -4,10 +4,18 @@ import 'package:tailorware/functions/generateOrdersList.dart';
 import 'package:tailorware/models/orderModel.dart';
 import 'package:tailorware/screens/orderDetailScreen.dart';
 
-class OdersList extends StatefulWidget {
-  const OdersList({super.key, required this.orders});
-  final dynamic orders;
+import '../../models/serviceModel.dart';
 
+class OdersList extends StatefulWidget {
+  const OdersList({
+    super.key,
+    required this.orders,
+    required this.title,
+    required this.color,
+  });
+  final List orders;
+  final String title;
+  final Color color;
   @override
   State<OdersList> createState() => _OdersListState();
 }
@@ -18,6 +26,7 @@ class _OdersListState extends State<OdersList> {
   @override
   void initState() {
     super.initState();
+
     ordersList = generateOrdersList(widget.orders);
   }
 
@@ -26,17 +35,18 @@ class _OdersListState extends State<OdersList> {
     return ListView.builder(
         itemCount: ordersList.length,
         itemBuilder: (BuildContext context, index) {
-          var order = ordersList[index];
-          var services = order.services;
+          Order order = ordersList[index];
+          List<Service> services = order.services;
+
           return Column(
             children: [
               index == 0
                   ? Padding(
                       padding: const EdgeInsets.fromLTRB(25.0, 20, 0, 15),
                       child: Row(
-                        children: const [
+                        children: [
                           Text(
-                            "Pending Orders",
+                            widget.title,
                             style: TextStyle(
                               color: Colors.black,
                               fontWeight: FontWeight.bold,
@@ -66,7 +76,9 @@ class _OdersListState extends State<OdersList> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const OrderDetailScreen(),
+                              builder: (context) => OrderDetailScreen(
+                                order: order,
+                              ),
                             ),
                           )
                         },
@@ -74,7 +86,7 @@ class _OdersListState extends State<OdersList> {
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color: Colors.blue,
+                            color: widget.color,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Center(

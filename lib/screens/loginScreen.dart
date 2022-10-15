@@ -51,13 +51,15 @@ class _LoginPageState extends State<LoginPage> {
           error = "";
         });
 
+        // save username in the global prefrences
+        await prefs.setString('username', user['user']['username']);
+        // save name in the global prefrences
+        await prefs.setString('name', user['user']['name']);
+        // save userId in the global prefrences
+        await prefs.setString('userId', user['user']['_id']);
+
         if (isCheckedRememberMe) {
-          // save username in the global prefrences
-          await prefs.setString('username', user['user']['username']);
-          // save name in the global prefrences
-          await prefs.setString('name', user['user']['name']);
-          // save userId in the global prefrences
-          await prefs.setString('userId', user['user']['_id']);
+          await prefs.setBool('remember', true);
         }
 
         if (!mounted) return;
