@@ -136,12 +136,20 @@ class _OnServiceScreenState extends State<OnServiceScreen> {
                 );
               } else if (snapshot.hasData) {
                 // return Pending Orders
-
-                return OdersList(
-                  orders: snapshot.data!['data']['orders'],
-                  title: "On-Service Orders",
-                  color: Colors.green,
-                );
+                if (snapshot.data!['data']['orders'].length > 0) {
+                  return OdersList(
+                    orders: snapshot.data!['data']['orders'],
+                    title: "On-Service Orders",
+                    color: Colors.green,
+                  );
+                } else {
+                  return const Center(
+                    child: Text(
+                      "No Services",
+                      style: TextStyle(fontSize: 20),
+                    ),
+                  );
+                }
               } else {
                 return const Center(
                   child: Text(
@@ -162,7 +170,8 @@ class _OnServiceScreenState extends State<OnServiceScreen> {
     var userId = prefs.getString('userId');
 
     final response = await http.get(
-      Uri.parse('http://$server/api/v1/orders/on-serive-orders/$userId'),
+      Uri.parse(
+          'http://$server/api/v1/orders/on-service-orders-by-user/$userId'),
     );
 
     print(json.decode(response.body));

@@ -1,5 +1,6 @@
 import 'package:tailorware/models/orderModel.dart';
 import 'package:tailorware/models/serviceModel.dart';
+import 'package:intl/intl.dart';
 
 List<Order> generateOrdersList(orders) {
   List<Order> ordersList = [];
@@ -27,12 +28,17 @@ List<Order> generateOrdersList(orders) {
       );
     }
     var customer = order['customer'];
+    var date = DateTime.parse(order['deadline']);
+    var deadline = DateFormat.yMMMMd().format(date);
 
     ordersList.add(
       Order(
         orderNumber: order['orderNumber']!,
         name: order['name']!,
         customerName: customer!['name'],
+        phone: customer!['phone'],
+        deadline: deadline,
+        ref: order['Ref'],
         services: services,
       ),
     );

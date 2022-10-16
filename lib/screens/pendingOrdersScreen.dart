@@ -135,11 +135,20 @@ class _PendingOrdersScreenState extends State<PendingOrdersScreen> {
                 );
               } else if (snapshot.hasData) {
                 // return Pending Orders
-                return OdersList(
-                  orders: snapshot.data!['data']['orders'],
-                  title: "Pending Orders",
-                  color: Colors.blue,
-                );
+                if (snapshot.data!['data']['orders'].length > 0) {
+                  return OdersList(
+                    orders: snapshot.data!['data']['orders'],
+                    title: "Pending Orders",
+                    color: Colors.blue,
+                  );
+                } else {
+                  return const Center(
+                    child: Text(
+                      "No Services",
+                      style: TextStyle(fontSize: 20),
+                    ),
+                  );
+                }
               } else {
                 return const Center(
                   child: Text(
