@@ -1,4 +1,4 @@
-import 'package:tailorware/models/serviceModel.dart';
+import 'package:tailorware/models/service_model.dart';
 
 class Order {
   Order({
@@ -10,6 +10,7 @@ class Order {
     required this.ref,
     required this.phone,
     required this.deadline,
+    required this.orderId,
   });
   final int orderNumber;
   final String name;
@@ -18,5 +19,6 @@ class Order {
   final String phone;
   final String deadline;
   final List<Service> services;
+  final String orderId;
   bool isExpanded;
 }

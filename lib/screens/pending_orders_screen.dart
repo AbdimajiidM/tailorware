@@ -3,11 +3,10 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:tailorware/screens/loginScreen.dart';
-import 'package:tailorware/screens/orderDetailScreen.dart';
-import 'package:tailorware/screens/widgets/ordersList.dart';
+import 'package:tailorware/screens/login_screen.dart';
+import 'package:tailorware/screens/widgets/orders_list.dart';
 import 'package:flutter_dialogs/flutter_dialogs.dart';
 import 'package:http/http.dart' as http;
 
@@ -55,6 +54,7 @@ class _PendingOrdersScreenState extends State<PendingOrdersScreen> {
     );
   }
 
+  @override
   void initState() {
     super.initState();
     fetchUser();
@@ -144,7 +144,7 @@ class _PendingOrdersScreenState extends State<PendingOrdersScreen> {
                 } else {
                   return const Center(
                     child: Text(
-                      "No Services",
+                      "No Orders",
                       style: TextStyle(fontSize: 20),
                     ),
                   );
@@ -167,7 +167,7 @@ class _PendingOrdersScreenState extends State<PendingOrdersScreen> {
     final prefs = await SharedPreferences.getInstance();
     var server = prefs.getString('server');
     final response = await http.get(
-      Uri.parse('http://$server/api/v1/orders'),
+      Uri.parse('http://$server/api/v1/orders/pending-orders'),
     );
 
     if (response.statusCode == 200) {

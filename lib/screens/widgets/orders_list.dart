@@ -1,10 +1,9 @@
-// ignore_for_file: prefer_const_constructors
 import 'package:flutter/material.dart';
-import 'package:tailorware/functions/generateOrdersList.dart';
-import 'package:tailorware/models/orderModel.dart';
-import 'package:tailorware/screens/orderDetailScreen.dart';
+import 'package:tailorware/functions/generate_orders_list.dart';
+import 'package:tailorware/models/order_model.dart';
+import 'package:tailorware/screens/order_detail_screen.dart';
 
-import '../../models/serviceModel.dart';
+import '../../models/service_model.dart';
 
 class OdersList extends StatefulWidget {
   const OdersList({
@@ -47,7 +46,7 @@ class _OdersListState extends State<OdersList> {
                         children: [
                           Text(
                             widget.title,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.black,
                               fontWeight: FontWeight.bold,
                               fontSize: 18,
@@ -56,10 +55,10 @@ class _OdersListState extends State<OdersList> {
                         ],
                       ),
                     )
-                  : SizedBox(),
+                  : const SizedBox(),
               ExpansionPanelList(
                 elevation: 0,
-                animationDuration: Duration(milliseconds: 300),
+                animationDuration: const Duration(milliseconds: 300),
                 expandedHeaderPadding: const EdgeInsets.symmetric(vertical: 0),
                 expansionCallback: (int i, bool isExpanded) {
                   setState(() {
@@ -92,7 +91,7 @@ class _OdersListState extends State<OdersList> {
                           child: Center(
                             child: Text(
                               order.orderNumber.toString(),
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Colors.white,
                               ),
                             ),
@@ -104,7 +103,7 @@ class _OdersListState extends State<OdersList> {
                             Text(order.name),
                             Text(
                               order.customerName,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 10,
                                 color: Colors.grey,
                               ),
@@ -126,7 +125,7 @@ class _OdersListState extends State<OdersList> {
                                   ),
                                 ),
                               )
-                            : SizedBox(
+                            : const SizedBox(
                                 width: 0,
                               ),
                       );
@@ -137,7 +136,7 @@ class _OdersListState extends State<OdersList> {
                               Padding(
                                 padding: const EdgeInsets.only(left: 50),
                                 child: ListTile(
-                                  visualDensity: VisualDensity(
+                                  visualDensity: const VisualDensity(
                                       horizontal: -4, vertical: 0),
                                   leading: Container(
                                     height: 45,
@@ -160,7 +159,7 @@ class _OdersListState extends State<OdersList> {
                                       Text(service.name),
                                       Text(
                                         service.style,
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           fontSize: 10,
                                           color: Colors.grey,
                                         ),
@@ -170,7 +169,7 @@ class _OdersListState extends State<OdersList> {
                                 ),
                               )
                           ])
-                        : SizedBox(
+                        : const SizedBox(
                             height: 0,
                           ),
                     isExpanded: order.isExpanded,

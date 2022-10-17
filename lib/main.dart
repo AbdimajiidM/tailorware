@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tailorware/screens/homeScreen.dart';
-import 'package:tailorware/screens/loginScreen.dart';
+import 'package:tailorware/screens/home_screen.dart';
+import 'package:tailorware/screens/login_screen.dart';
 import "package:shared_preferences/shared_preferences.dart";
 
 Future<void> main() async {

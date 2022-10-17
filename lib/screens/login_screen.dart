@@ -1,8 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_dialogs/flutter_dialogs.dart';
-import 'package:tailorware/screens/homeScreen.dart';
+import 'package:tailorware/screens/home_screen.dart';
 import "package:shared_preferences/shared_preferences.dart";
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -116,7 +114,7 @@ class _LoginPageState extends State<LoginPage> {
                       context: context,
                       builder: (context) => BasicDialogAlert(
                         title: const Center(child: Text("Tailorware Server")),
-                        content: Container(
+                        content: SizedBox(
                           height: 80,
                           child: Column(
                             children: [
@@ -157,6 +155,7 @@ class _LoginPageState extends State<LoginPage> {
                                 'server',
                                 ipAddressController.text,
                               );
+                              // ignore: use_build_context_synchronously
                               Navigator.pop(context);
                             },
                           ),

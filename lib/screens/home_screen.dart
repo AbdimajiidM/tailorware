@@ -1,12 +1,8 @@
 // ignore_for_file: prefer_const_constructors
 
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:tailorware/screens/onServiceScreen.dart';
-import 'package:tailorware/screens/pendingOrdersScreen.dart';
-import 'package:tailorware/screens/loginScreen.dart';
-import 'package:tailorware/screens/orderDetailScreen.dart';
+import 'package:tailorware/screens/on_service_screen.dart';
+import 'package:tailorware/screens/pending_orders_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
