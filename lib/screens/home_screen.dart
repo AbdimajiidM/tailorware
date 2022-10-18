@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:tailorware/screens/menu_screen.dart';
 import 'package:tailorware/screens/on_service_screen.dart';
 import 'package:tailorware/screens/pending_orders_screen.dart';
 
@@ -17,7 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final _pageOptions = [
     PendingOrdersScreen(),
     OnServiceScreen(),
-    OnServiceScreen(),
+    MenuScreen(),
   ];
 
   @override
