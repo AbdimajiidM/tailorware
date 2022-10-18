@@ -140,6 +140,7 @@ class _OnServiceScreenState extends State<OnServiceScreen> {
                     orders: snapshot.data!['data']['orders'],
                     title: "On-Service Orders",
                     color: Colors.green,
+                    isPending: false,
                   );
                 } else {
                   return const Center(

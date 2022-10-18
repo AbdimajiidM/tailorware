@@ -140,6 +140,7 @@ class _PendingOrdersScreenState extends State<PendingOrdersScreen> {
                     orders: snapshot.data!['data']['orders'],
                     title: "Pending Orders",
                     color: Colors.blue,
+                    isPending: true,
                   );
                 } else {
                   return const Center(

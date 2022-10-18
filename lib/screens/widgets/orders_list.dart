@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tailorware/functions/generate_orders_list.dart';
 import 'package:tailorware/models/order_model.dart';
 import 'package:tailorware/screens/order_detail_screen.dart';
@@ -11,22 +14,32 @@ class OdersList extends StatefulWidget {
     required this.orders,
     required this.title,
     required this.color,
+    required this.isPending,
   });
   final List orders;
   final String title;
   final Color color;
+  final bool isPending;
   @override
   State<OdersList> createState() => _OdersListState();
 }
 
 class _OdersListState extends State<OdersList> {
   List<Order> ordersList = [];
-
+  String? server;
   @override
   void initState() {
     super.initState();
-
+    getServer();
     ordersList = generateOrdersList(widget.orders);
+  }
+
+  void getServer() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      server = prefs.getString('server');
+    });
   }
 
   @override
@@ -77,6 +90,7 @@ class _OdersListState extends State<OdersList> {
                             MaterialPageRoute(
                               builder: (context) => OrderDetailScreen(
                                 order: order,
+                                isPending: widget.isPending,
                               ),
                             ),
                           )
@@ -120,7 +134,7 @@ class _OdersListState extends State<OdersList> {
                                   image: DecorationImage(
                                     fit: BoxFit.cover,
                                     image: NetworkImage(
-                                      'http://192.168.100.77/api/v1/files/${services[0].imageName}',
+                                      'http://$server/api/v1/files/${services[0].imageName}',
                                     ),
                                   ),
                                 ),
@@ -147,7 +161,7 @@ class _OdersListState extends State<OdersList> {
                                       image: DecorationImage(
                                         fit: BoxFit.cover,
                                         image: NetworkImage(
-                                          'http://192.168.100.77/api/v1/files/${service.imageName}',
+                                          'http://$server/api/v1/files/${service.imageName}',
                                         ),
                                       ),
                                     ),

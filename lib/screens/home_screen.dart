@@ -5,20 +5,26 @@ import 'package:tailorware/screens/on_service_screen.dart';
 import 'package:tailorware/screens/pending_orders_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-
+  const HomeScreen({super.key, this.selectedRoute = 0});
+  final int selectedRoute;
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int selectedPage = 0;
+  late int selectedPage;
 
   final _pageOptions = [
     PendingOrdersScreen(),
     OnServiceScreen(),
     OnServiceScreen(),
   ];
+
+  @override
+  void initState() {
+    selectedPage = widget.selectedRoute;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,15 +40,15 @@ class _HomeScreenState extends State<HomeScreen> {
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
               icon: Icon(Icons.home),
-              label: "Home",
+              label: "Pending",
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.people),
               label: "On-services ",
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: "Profile",
+              icon: Icon(Icons.menu_book),
+              label: "Menu",
             ),
           ],
           currentIndex: selectedPage,

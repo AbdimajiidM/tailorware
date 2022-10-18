@@ -6,18 +6,41 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:tailorware/models/order_model.dart';
 import 'package:tailorware/models/size_model.dart';
+import 'package:tailorware/screens/home_screen.dart';
 import 'package:tailorware/screens/on_service_screen.dart';
+import 'package:tailorware/screens/pending_orders_screen.dart';
 
 class OrderDetailScreen extends StatefulWidget {
-  const OrderDetailScreen({super.key, required this.order});
+  const OrderDetailScreen({
+    super.key,
+    required this.order,
+    required this.isPending,
+  });
 
   final Order order;
+  final bool isPending;
 
   @override
   State<OrderDetailScreen> createState() => _OrderDetailScreenState();
 }
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
+  String? server;
+
+  void getServer() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      server = prefs.getString('server');
+    });
+  }
+
+  @override
+  void initState() {
+    getServer();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,9 +72,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 onPressed: () => {
                                   Navigator.pop(context),
                                 },
-                                icon: const Icon(
+                                icon: Icon(
                                   Icons.arrow_back,
-                                  color: Colors.blue,
+                                  color: widget.isPending
+                                      ? Colors.blue
+                                      : Colors.green,
                                   size: 25,
                                 ),
                               ),
@@ -59,10 +84,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const CircleAvatar(
-                                  backgroundColor: Colors.blue,
+                                CircleAvatar(
+                                  backgroundColor: widget.isPending
+                                      ? Colors.blue
+                                      : Colors.green,
                                   radius: 30,
-                                  child: Icon(
+                                  child: const Icon(
                                     Icons.person,
                                     size: 40,
                                   ),
@@ -84,8 +111,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 ),
                                 Text(
                                   '#${widget.order.ref}',
-                                  style: const TextStyle(
-                                    color: Colors.blue,
+                                  style: TextStyle(
+                                    color: widget.isPending
+                                        ? Colors.blue
+                                        : Colors.green,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 14,
                                   ),
@@ -118,18 +147,25 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           OrderDetailItems(
                             title: 'Order',
                             value: widget.order.name,
+                            color:
+                                widget.isPending ? Colors.blue : Colors.green,
                           ),
                           OrderDetailItems(
                             title: 'Deadline',
                             value: widget.order.deadline,
+                            color:
+                                widget.isPending ? Colors.blue : Colors.green,
                           ),
                           OrderDetailItems(
                             title: 'Contact',
                             value: widget.order.phone,
+                            color:
+                                widget.isPending ? Colors.blue : Colors.green,
                           ),
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
+                              backgroundColor:
+                                  widget.isPending ? Colors.blue : Colors.green,
                               minimumSize: const Size(100, 30),
                               elevation: 1,
                             ),
@@ -137,10 +173,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               showPlatformDialog(
                                 context: context,
                                 builder: (context) => BasicDialogAlert(
-                                  title: const Center(child: Text("Serve")),
-                                  content: const Text(
-                                    "do you realy want to do this order?",
+                                  title: Center(
+                                    child: widget.isPending
+                                        ? const Text("Serve")
+                                        : const Text("Finish Order"),
                                   ),
+                                  content: widget.isPending
+                                      ? const Text(
+                                          "do you realy want to do this order?",
+                                        )
+                                      : const Text(
+                                          "do you realy want to finish this order?",
+                                        ),
                                   actions: <Widget>[
                                     BasicDialogAction(
                                       title: const Text("No"),
@@ -152,17 +196,26 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                       child: const Text("Yes"),
                                       onPressed: () async {
                                         Navigator.pop(context);
-                                        assignOrderToUser(
-                                          widget.order.orderId,
-                                          context,
-                                        );
+                                        if (widget.isPending) {
+                                          assignOrderToUser(
+                                            widget.order.orderId,
+                                            context,
+                                          );
+                                        } else {
+                                          finishOrder(
+                                            widget.order.orderId,
+                                            context,
+                                          );
+                                        }
                                       },
                                     ),
                                   ],
                                 ),
                               );
                             },
-                            child: const Text("Serve"),
+                            child: widget.isPending
+                                ? const Text("Serve")
+                                : const Text("Complete"),
                           )
                         ],
                       ),
@@ -208,47 +261,76 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         ),
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(40, 40, 0, 0),
-                          child: Column(
+                          child: Stack(
                             children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
+                              Column(
                                 children: [
-                                  CircleAvatar(
-                                    backgroundColor: Colors.blue,
-                                    radius: 25,
-                                    child: Text(
-                                      '${index + 1}',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                    width: 15,
-                                  ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
-                                      Text(widget.order.services[index].name),
-                                      SizedBox(
-                                        width: 200,
+                                      CircleAvatar(
+                                        backgroundColor: widget.isPending
+                                            ? Colors.blue
+                                            : Colors.green,
+                                        radius: 25,
                                         child: Text(
-                                          widget.order.services[index].style,
+                                          '${index + 1}',
                                           style: const TextStyle(
-                                            fontSize: 10,
-                                            color: Colors.grey,
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
                                           ),
                                         ),
                                       ),
+                                      const SizedBox(
+                                        width: 15,
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(widget
+                                              .order.services[index].name),
+                                          SizedBox(
+                                            width: 200,
+                                            child: Text(
+                                              widget
+                                                  .order.services[index].style,
+                                              style: const TextStyle(
+                                                fontSize: 10,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      )
                                     ],
+                                  ),
+                                  OrderSizes(
+                                    sizes: widget.order.services[index].sizes,
                                   )
                                 ],
                               ),
-                              OrderSizes(
-                                sizes: widget.order.services[index].sizes,
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: Container(
+                                  height: 45,
+                                  width: 120,
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue,
+                                    borderRadius: const BorderRadius.only(
+                                      bottomRight: Radius.circular(10),
+                                      topLeft: Radius.circular(10),
+                                    ),
+                                    image: DecorationImage(
+                                      fit: BoxFit.cover,
+                                      image: NetworkImage(
+                                        'http://$server/api/v1/files/${widget.order.services[index].imageName}',
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               )
                             ],
                           ),
@@ -266,10 +348,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 }
 
 class OrderDetailItems extends StatelessWidget {
-  const OrderDetailItems({super.key, required this.title, required this.value});
+  const OrderDetailItems({
+    super.key,
+    required this.title,
+    required this.value,
+    required this.color,
+  });
 
   final String title;
   final String value;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -288,8 +376,8 @@ class OrderDetailItems extends StatelessWidget {
         ),
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.blue,
+          style: TextStyle(
+            color: color,
             fontSize: 12,
           ),
         ),
@@ -365,11 +453,13 @@ void assignOrderToUser(orderId, context) async {
             BasicDialogAction(
               title: const Text("OK"),
               onPressed: () {
-                Navigator.push(
-                  context,
+                Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(
-                    builder: (context) => const OnServiceScreen(),
+                    builder: (BuildContext context) => const HomeScreen(
+                      selectedRoute: 1,
+                    ),
                   ),
+                  (Route route) => false,
                 );
               },
             ),
@@ -414,11 +504,109 @@ void assignOrderToUser(orderId, context) async {
           BasicDialogAction(
             title: const Text("OK"),
             onPressed: () {
-              Navigator.push(
-                context,
+              Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
-                  builder: (context) => const OnServiceScreen(),
+                  builder: (BuildContext context) => const HomeScreen(
+                    selectedRoute: 1,
+                  ),
                 ),
+                (Route route) => false,
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+void finishOrder(orderId, context) async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    var server = prefs.getString('server');
+
+    final response = await http.post(
+      Uri.parse(
+        'http://$server/api/v1/orders/finish-order/$orderId',
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      showPlatformDialog(
+        context: context,
+        builder: (context) => BasicDialogAlert(
+          title: const Text("Success"),
+          content: const Text("Succssfully Completed"),
+          actions: <Widget>[
+            BasicDialogAction(
+              title: const Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (BuildContext context) => const HomeScreen(
+                      selectedRoute: 1,
+                    ),
+                  ),
+                  (Route route) => false,
+                );
+              },
+            ),
+          ],
+        ),
+      );
+    } else {
+      var error = json.decode(response.body);
+      showPlatformDialog(
+        context: context,
+        builder: (context) => BasicDialogAlert(
+          title: const Text(
+            "Error",
+            style: TextStyle(
+              color: Colors.red,
+            ),
+          ),
+          content: Text(error['message'] ?? 'Error'),
+          actions: <Widget>[
+            BasicDialogAction(
+              title: const Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (BuildContext context) => const HomeScreen(
+                      selectedRoute: 1,
+                    ),
+                  ),
+                  (Route route) => false,
+                );
+              },
+            ),
+          ],
+        ),
+      );
+    }
+  } catch (e) {
+    showPlatformDialog(
+      context: context,
+      builder: (context) => BasicDialogAlert(
+        title: const Text(
+          "Error",
+          style: TextStyle(
+            color: Colors.red,
+          ),
+        ),
+        content: Text("Error : $e"),
+        actions: <Widget>[
+          BasicDialogAction(
+            title: const Text("OK"),
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (BuildContext context) => const HomeScreen(
+                    selectedRoute: 1,
+                  ),
+                ),
+                (Route route) => false,
               );
             },
           ),
