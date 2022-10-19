@@ -1,12 +1,15 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'dart:convert';
-
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tailorware/screens/home_screen.dart';
 import 'package:tailorware/screens/login_screen.dart';
-import 'package:tailorware/screens/widgets/orders_list.dart';
+import 'package:tailorware/screens/menu_details_screen.dart';
+
 import 'package:flutter_dialogs/flutter_dialogs.dart';
 import 'package:http/http.dart' as http;
 
@@ -202,7 +205,17 @@ class _MenuScreenState extends State<MenuScreen> {
                                   children: [
                                     Expanded(
                                       child: ElevatedButton(
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  MenuDetailsScreen(
+                                                menu: menu,
+                                              ),
+                                            ),
+                                          );
+                                        },
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.white,
                                           side: BorderSide(
@@ -223,7 +236,12 @@ class _MenuScreenState extends State<MenuScreen> {
                                     ),
                                     Expanded(
                                       child: ElevatedButton(
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          addMenuProductsDialog(
+                                            context,
+                                            menu['_id'],
+                                          );
+                                        },
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.blue,
                                           side: BorderSide(
@@ -279,5 +297,209 @@ class _MenuScreenState extends State<MenuScreen> {
     } else {
       throw Exception('Failed to load data.');
     }
+  }
+}
+
+dynamic addMenuProductsDialog(context, menuId) {
+  return showDialog(
+    context: context,
+    builder: (context) {
+      // dialog body content
+      Widget content = SizedBox();
+      bool isSelected = false;
+      List<XFile> menuProducts = [];
+      // dialog box
+      return StatefulBuilder(
+        builder: (context, setState) {
+          void selectImages() async {
+            // image picker object
+            final ImagePicker imagePicker = ImagePicker();
+            // picked images
+            List<XFile>? imageFileList = [];
+
+            // select[pick] multiple images
+            final List<XFile> selectedImages =
+                await imagePicker.pickMultiImage();
+
+            // if not empty, set imagefilelist to selected images
+            if (selectedImages.isNotEmpty) {
+              imageFileList.addAll(selectedImages);
+            }
+
+            // if all well set the body
+            setState(() {
+              content = showSelectedImages(imageFileList, context);
+              menuProducts = imageFileList;
+              isSelected = true;
+            });
+          }
+
+          return AlertDialog(
+            content: content,
+            actions: <Widget>[
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (!isSelected) {
+                      selectImages();
+                    } else {
+                      addMenuItems(context, menuId, menuProducts);
+                    }
+                  },
+                  child: !isSelected
+                      ? Text("Select Images")
+                      : Text("Upload Images"),
+                ),
+              )
+            ],
+          );
+        },
+      );
+    },
+  );
+}
+
+Widget showSelectedImages(imageFileList, context) {
+  List<Widget> widgets = [];
+  int index = 0;
+  while (index < imageFileList.length) {
+    widgets.add(Padding(
+      padding: const EdgeInsets.only(bottom: 15.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          SizedBox(
+            width: 100,
+            height: 100,
+            child: Image.file(
+              File(
+                imageFileList[index].path,
+              ),
+              fit: BoxFit.cover,
+            ),
+          ),
+          index < imageFileList.length - 1
+              ? SizedBox(
+                  width: 100,
+                  height: 100,
+                  child: Image.file(
+                    File(
+                      imageFileList[index + 1].path,
+                    ),
+                    fit: BoxFit.cover,
+                  ),
+                )
+              : SizedBox(
+                  width: 100,
+                  height: 100,
+                ),
+        ],
+      ),
+    ));
+    index += 2;
+  }
+  return SizedBox(
+    height: 250,
+    child: SingleChildScrollView(
+      child: Column(
+        children: widgets,
+      ),
+    ),
+  );
+}
+
+void addMenuItems(context, menuId, menuProducts) async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    var server = prefs.getString('server');
+    var url = 'http://$server/api/v1/menus/add-menu-products/$menuId';
+
+    // var request = http.MultipartRequest('POST', Uri.parse(url));
+    // request.files.add(await http.MultipartFile.fromPath('menuProducts', menuProducts));
+    // var response = await request.send();
+    // // return res.reasonPhrase;
+
+    final response = await http.post(
+      Uri.parse(
+        'http://$server/api/v1/menus/add-menu-products/$menuId',
+      ),
+      body: {menuProducts: menuProducts},
+    );
+
+    print('Here Wer Are');
+    if (response.statusCode == 200) {
+      showPlatformDialog(
+        context: context,
+        builder: (context) => BasicDialogAlert(
+          title: const Text("Error"),
+          content: const Text("Succssfully Completed"),
+          actions: <Widget>[
+            BasicDialogAction(
+              title: const Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (BuildContext context) => const HomeScreen(
+                      selectedRoute: 3,
+                    ),
+                  ),
+                  (Route route) => false,
+                );
+              },
+            ),
+          ],
+        ),
+      );
+    } else {
+      var error = json.decode(response.body);
+      showPlatformDialog(
+        context: context,
+        builder: (context) => BasicDialogAlert(
+          title: const Text(
+            "Error",
+            style: TextStyle(
+              color: Colors.red,
+            ),
+          ),
+          content: Text(error['message'] ?? 'Error'),
+          actions: <Widget>[
+            BasicDialogAction(
+              title: const Text("OK"),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      );
+    }
+  } catch (e) {
+    showPlatformDialog(
+      context: context,
+      builder: (context) => BasicDialogAlert(
+        title: const Text(
+          "Error",
+          style: TextStyle(
+            color: Colors.red,
+          ),
+        ),
+        content: Text("Error : $e"),
+        actions: <Widget>[
+          BasicDialogAction(
+            title: const Text("OK"),
+            onPressed: () {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (BuildContext context) => const HomeScreen(
+                    selectedRoute: 2,
+                  ),
+                ),
+                (Route route) => false,
+              );
+            },
+          ),
+        ],
+      ),
+    );
   }
 }
