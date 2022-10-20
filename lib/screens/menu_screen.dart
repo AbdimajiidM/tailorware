@@ -27,6 +27,7 @@ class _MenuScreenState extends State<MenuScreen> {
   String? userId;
   bool isOpen = false;
   String? server;
+  bool isLoading = false;
 
   void getServer() async {
     final prefs = await SharedPreferences.getInstance();
@@ -307,6 +308,7 @@ dynamic addMenuProductsDialog(context, menuId) {
       // dialog body content
       Widget content = SizedBox();
       bool isSelected = false;
+      bool isUploading = false;
       List<XFile> menuProducts = [];
       // dialog box
       return StatefulBuilder(
@@ -339,16 +341,29 @@ dynamic addMenuProductsDialog(context, menuId) {
             actions: <Widget>[
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (!isSelected) {
                       selectImages();
                     } else {
-                      addMenuItems(context, menuId, menuProducts);
+                      setState(() {
+                        isUploading = true;
+                      });
+                      await uploadMenuImages(context, menuId, menuProducts);
+                      setState(() {
+                        isUploading = false;
+                      });
                     }
                   },
-                  child: !isSelected
-                      ? Text("Select Images")
-                      : Text("Upload Images"),
+                  child: !isUploading
+                      ? !isSelected
+                          ? Text("Select Images")
+                          : Text("Upload Images")
+                      : Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: CircularProgressIndicator(
+                            backgroundColor: Colors.white,
+                          ),
+                        ),
                 ),
               )
             ],
@@ -408,30 +423,39 @@ Widget showSelectedImages(imageFileList, context) {
   );
 }
 
-void addMenuItems(context, menuId, menuProducts) async {
+Future<void> uploadMenuImages(context, menuId, menuProducts) async {
   try {
     final prefs = await SharedPreferences.getInstance();
     var server = prefs.getString('server');
     var url = 'http://$server/api/v1/menus/add-menu-products/$menuId';
 
-    // var request = http.MultipartRequest('POST', Uri.parse(url));
-    // request.files.add(await http.MultipartFile.fromPath('menuProducts', menuProducts));
-    // var response = await request.send();
-    // // return res.reasonPhrase;
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse(url),
+    );
+    Map<String, String> headers = {"Content-type": "multipart/form-data"};
 
-    final response = await http.post(
-      Uri.parse(
-        'http://$server/api/v1/menus/add-menu-products/$menuId',
-      ),
-      body: {menuProducts: menuProducts},
+    menuProducts.forEach(
+      (menu) => {
+        request.files.add(http.MultipartFile(
+          'menuProducts',
+          File(menu.path).readAsBytes().asStream(),
+          File(menu.path).lengthSync(),
+          filename: menu.path.split('/').last,
+        ))
+      },
     );
 
-    print('Here Wer Are');
+    request.headers.addAll(headers);
+
+    var res = await request.send();
+    http.Response response = await http.Response.fromStream(res);
+
     if (response.statusCode == 200) {
       showPlatformDialog(
         context: context,
         builder: (context) => BasicDialogAlert(
-          title: const Text("Error"),
+          title: const Text("Success"),
           content: const Text("Succssfully Completed"),
           actions: <Widget>[
             BasicDialogAction(
@@ -440,7 +464,7 @@ void addMenuItems(context, menuId, menuProducts) async {
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(
                     builder: (BuildContext context) => const HomeScreen(
-                      selectedRoute: 3,
+                      selectedRoute: 2,
                     ),
                   ),
                   (Route route) => false,

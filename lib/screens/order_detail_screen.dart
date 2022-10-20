@@ -7,8 +7,6 @@ import 'package:http/http.dart' as http;
 import 'package:tailorware/models/order_model.dart';
 import 'package:tailorware/models/size_model.dart';
 import 'package:tailorware/screens/home_screen.dart';
-import 'package:tailorware/screens/on_service_screen.dart';
-import 'package:tailorware/screens/pending_orders_screen.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   const OrderDetailScreen({
