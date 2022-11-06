@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dialogs/flutter_dialogs.dart';
 import 'package:tailorware/screens/home_screen.dart';
@@ -37,10 +39,15 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      final response = await http.get(
-        Uri.parse(
-            '$baseUrl/users/authenticate?username=$username&password=$password'),
-      );
+      final response = await http
+          .get(
+            Uri.parse(
+              '$baseUrl/users/authenticate?username=$username&password=$password',
+            ),
+          )
+          .timeout(
+            const Duration(seconds: 10),
+          );
 
       if (response.statusCode == 200) {
         final Map user = json.decode(response.body);
@@ -74,6 +81,11 @@ class _LoginPageState extends State<LoginPage> {
           error = "Invalid Username Or Password";
         });
       }
+      // ignore: unused_catch_clause
+    } on TimeoutException catch (err) {
+      setState(() {
+        error = 'Timeout, please check your connection';
+      });
     } catch (e) {
       setState(() {
         error = '$e';

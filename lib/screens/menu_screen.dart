@@ -299,164 +299,214 @@ class _MenuScreenState extends State<MenuScreen> {
       throw Exception('Failed to load data.');
     }
   }
-}
 
-dynamic addMenuProductsDialog(context, menuId) {
-  return showDialog(
-    context: context,
-    builder: (context) {
-      // dialog body content
-      Widget content = SizedBox();
-      bool isSelected = false;
-      bool isUploading = false;
-      List<XFile> menuProducts = [];
-      // dialog box
-      return StatefulBuilder(
-        builder: (context, setState) {
-          void selectImages() async {
-            // image picker object
-            final ImagePicker imagePicker = ImagePicker();
-            // picked images
-            List<XFile>? imageFileList = [];
+  dynamic addMenuProductsDialog(context, menuId) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        // dialog body content
+        Widget content = SizedBox();
+        bool isSelected = false;
+        bool isUploading = false;
+        List<XFile> menuProducts = [];
+        // dialog box
+        return StatefulBuilder(
+          builder: (context, setState) {
+            void selectImages() async {
+              // image picker object
+              final ImagePicker imagePicker = ImagePicker();
+              // picked images
+              List<XFile>? imageFileList = [];
 
-            // select[pick] multiple images
-            final List<XFile> selectedImages =
-                await imagePicker.pickMultiImage();
+              // select[pick] multiple images
+              final List<XFile> selectedImages =
+                  await imagePicker.pickMultiImage();
 
-            // if not empty, set imagefilelist to selected images
-            if (selectedImages.isNotEmpty) {
-              imageFileList.addAll(selectedImages);
+              // if not empty, set imagefilelist to selected images
+              if (selectedImages.isNotEmpty) {
+                imageFileList.addAll(selectedImages);
+              }
+
+              // if all well set the body
+              setState(() {
+                content = showSelectedImages(imageFileList, context);
+                menuProducts = imageFileList;
+                isSelected = true;
+              });
             }
 
-            // if all well set the body
-            setState(() {
-              content = showSelectedImages(imageFileList, context);
-              menuProducts = imageFileList;
-              isSelected = true;
-            });
-          }
-
-          return AlertDialog(
-            content: content,
-            actions: <Widget>[
-              Center(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    if (!isSelected) {
-                      selectImages();
-                    } else {
-                      setState(() {
-                        isUploading = true;
-                      });
-                      await uploadMenuImages(context, menuId, menuProducts);
-                      setState(() {
-                        isUploading = false;
-                      });
-                    }
-                  },
-                  child: !isUploading
-                      ? !isSelected
-                          ? Text("Select Images")
-                          : Text("Upload Images")
-                      : Padding(
-                          padding: const EdgeInsets.all(5.0),
-                          child: CircularProgressIndicator(
-                            backgroundColor: Colors.white,
+            return AlertDialog(
+              content: content,
+              actions: <Widget>[
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      if (!isSelected) {
+                        selectImages();
+                      } else {
+                        setState(() {
+                          isUploading = true;
+                        });
+                        await uploadMenuImages(context, menuId, menuProducts);
+                        setState(() {
+                          isUploading = false;
+                        });
+                      }
+                    },
+                    child: !isUploading
+                        ? !isSelected
+                            ? Text("Select Images")
+                            : Text("Upload Images")
+                        : Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: CircularProgressIndicator(
+                              backgroundColor: Colors.white,
+                            ),
                           ),
-                        ),
-                ),
-              )
-            ],
-          );
-        },
-      );
-    },
-  );
-}
-
-Widget showSelectedImages(imageFileList, context) {
-  List<Widget> widgets = [];
-  int index = 0;
-  while (index < imageFileList.length) {
-    widgets.add(Padding(
-      padding: const EdgeInsets.only(bottom: 15.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          SizedBox(
-            width: 100,
-            height: 100,
-            child: Image.file(
-              File(
-                imageFileList[index].path,
-              ),
-              fit: BoxFit.cover,
-            ),
-          ),
-          index < imageFileList.length - 1
-              ? SizedBox(
-                  width: 100,
-                  height: 100,
-                  child: Image.file(
-                    File(
-                      imageFileList[index + 1].path,
-                    ),
-                    fit: BoxFit.cover,
                   ),
                 )
-              : SizedBox(
-                  width: 100,
-                  height: 100,
-                ),
-        ],
-      ),
-    ));
-    index += 2;
-  }
-  return SizedBox(
-    height: 250,
-    child: SingleChildScrollView(
-      child: Column(
-        children: widgets,
-      ),
-    ),
-  );
-}
-
-Future<void> uploadMenuImages(context, menuId, menuProducts) async {
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    var server = prefs.getString('server');
-    var url = 'http://$server/api/v1/menus/add-menu-products/$menuId';
-
-    var request = http.MultipartRequest(
-      'POST',
-      Uri.parse(url),
-    );
-    Map<String, String> headers = {"Content-type": "multipart/form-data"};
-
-    menuProducts.forEach(
-      (menu) => {
-        request.files.add(http.MultipartFile(
-          'menuProducts',
-          File(menu.path).readAsBytes().asStream(),
-          File(menu.path).lengthSync(),
-          filename: menu.path.split('/').last,
-        ))
+              ],
+            );
+          },
+        );
       },
     );
+  }
 
-    request.headers.addAll(headers);
+  Widget showSelectedImages(imageFileList, context) {
+    List<Widget> widgets = [];
+    int index = 0;
+    while (index < imageFileList.length) {
+      widgets.add(Padding(
+        padding: const EdgeInsets.only(bottom: 15.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            SizedBox(
+              width: 100,
+              height: 100,
+              child: Image.file(
+                File(
+                  imageFileList[index].path,
+                ),
+                fit: BoxFit.cover,
+              ),
+            ),
+            index < imageFileList.length - 1
+                ? SizedBox(
+                    width: 100,
+                    height: 100,
+                    child: Image.file(
+                      File(
+                        imageFileList[index + 1].path,
+                      ),
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                : SizedBox(
+                    width: 100,
+                    height: 100,
+                  ),
+          ],
+        ),
+      ));
+      index += 2;
+    }
+    return SizedBox(
+      height: 250,
+      child: SingleChildScrollView(
+        child: Column(
+          children: widgets,
+        ),
+      ),
+    );
+  }
 
-    var res = await request.send();
-    http.Response response = await http.Response.fromStream(res);
+  Future<void> uploadMenuImages(context, menuId, menuProducts) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      var server = prefs.getString('server');
+      var url = 'http://$server/api/v1/menus/add-menu-products/$menuId';
 
-    if (response.statusCode == 200) {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse(url),
+      );
+      Map<String, String> headers = {"Content-type": "multipart/form-data"};
+
+      menuProducts.forEach(
+        (menu) => {
+          request.files.add(http.MultipartFile(
+            'menuProducts',
+            File(menu.path).readAsBytes().asStream(),
+            File(menu.path).lengthSync(),
+            filename: menu.path.split('/').last,
+          ))
+        },
+      );
+
+      request.headers.addAll(headers);
+
+      var res = await request.send();
+      http.Response response = await http.Response.fromStream(res);
+
+      if (response.statusCode == 200) {
+        showPlatformDialog(
+          context: context,
+          builder: (context) => BasicDialogAlert(
+            title: const Text("Success"),
+            content: const Text("Succssfully Completed"),
+            actions: <Widget>[
+              BasicDialogAction(
+                title: const Text("OK"),
+                onPressed: () {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (BuildContext context) => const HomeScreen(
+                        selectedRoute: 2,
+                      ),
+                    ),
+                    (Route route) => false,
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      } else {
+        var error = json.decode(response.body);
+        showPlatformDialog(
+          context: context,
+          builder: (context) => BasicDialogAlert(
+            title: const Text(
+              "Error",
+              style: TextStyle(
+                color: Colors.red,
+              ),
+            ),
+            content: Text(error['message'] ?? 'Error'),
+            actions: <Widget>[
+              BasicDialogAction(
+                title: const Text("OK"),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
       showPlatformDialog(
         context: context,
         builder: (context) => BasicDialogAlert(
-          title: const Text("Success"),
-          content: const Text("Succssfully Completed"),
+          title: const Text(
+            "Error",
+            style: TextStyle(
+              color: Colors.red,
+            ),
+          ),
+          content: Text("Error : $e"),
           actions: <Widget>[
             BasicDialogAction(
               title: const Text("OK"),
@@ -474,56 +524,6 @@ Future<void> uploadMenuImages(context, menuId, menuProducts) async {
           ],
         ),
       );
-    } else {
-      var error = json.decode(response.body);
-      showPlatformDialog(
-        context: context,
-        builder: (context) => BasicDialogAlert(
-          title: const Text(
-            "Error",
-            style: TextStyle(
-              color: Colors.red,
-            ),
-          ),
-          content: Text(error['message'] ?? 'Error'),
-          actions: <Widget>[
-            BasicDialogAction(
-              title: const Text("OK"),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
-      );
     }
-  } catch (e) {
-    showPlatformDialog(
-      context: context,
-      builder: (context) => BasicDialogAlert(
-        title: const Text(
-          "Error",
-          style: TextStyle(
-            color: Colors.red,
-          ),
-        ),
-        content: Text("Error : $e"),
-        actions: <Widget>[
-          BasicDialogAction(
-            title: const Text("OK"),
-            onPressed: () {
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(
-                  builder: (BuildContext context) => const HomeScreen(
-                    selectedRoute: 2,
-                  ),
-                ),
-                (Route route) => false,
-              );
-            },
-          ),
-        ],
-      ),
-    );
   }
 }

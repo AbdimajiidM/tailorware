@@ -8,7 +8,6 @@ List<Order> generateOrdersList(orders) {
   List<Order> ordersList = [];
   for (var order in orders) {
     var orderServices = order['services']!;
-
     List<Service> services = [];
 
     for (var service in orderServices) {
@@ -42,6 +41,8 @@ List<Order> generateOrdersList(orders) {
           style: styles,
           imageName: service['imageUrl']!,
           sizes: sizes,
+          quantity: service['quantity'],
+          menu: service['menu'] != null ? service['menu']['name']! : "",
         ),
       );
     }
@@ -54,8 +55,8 @@ List<Order> generateOrdersList(orders) {
         orderId: order['_id'],
         orderNumber: order['orderNumber']!,
         name: order['name']!,
-        customerName: customer!['name'],
-        phone: customer!['phone'],
+        customerName: customer != null ? customer['name']! : "No Customer",
+        phone: customer != null ? customer['phone']! : "No Contact",
         deadline: deadline,
         ref: order['Ref'],
         services: services,

@@ -33,6 +33,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     });
   }
 
+  void goBackToRoute(route) {
+    Navigator.pop(context);
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (BuildContext context) => const HomeScreen(
+          selectedRoute: 1,
+        ),
+      ),
+      (Route route) => false,
+    );
+  }
+
   @override
   void initState() {
     getServer();
@@ -62,24 +74,25 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           ),
                         ],
                       ),
-                      child: Center(
-                        child: Stack(
-                          children: [
-                            Positioned(
-                              child: IconButton(
-                                onPressed: () => {
-                                  Navigator.pop(context),
-                                },
-                                icon: Icon(
-                                  Icons.arrow_back,
-                                  color: widget.isPending
-                                      ? Colors.blue
-                                      : Colors.green,
-                                  size: 25,
-                                ),
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            left: 0,
+                            child: IconButton(
+                              onPressed: () => {
+                                Navigator.pop(context),
+                              },
+                              icon: Icon(
+                                Icons.arrow_back,
+                                color: widget.isPending
+                                    ? Colors.blue
+                                    : Colors.green,
+                                size: 25,
                               ),
                             ),
-                            Column(
+                          ),
+                          Center(
+                            child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 CircleAvatar(
@@ -122,8 +135,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 ),
                               ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -193,16 +206,99 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                     ElevatedButton(
                                       child: const Text("Yes"),
                                       onPressed: () async {
-                                        Navigator.pop(context);
                                         if (widget.isPending) {
-                                          assignOrderToUser(
+                                          var assignOrderOrderResponse =
+                                              await assignOrderToUser(
                                             widget.order.orderId,
-                                            context,
+                                          );
+                                          if (!mounted) return;
+                                          Navigator.pop(context);
+                                          showPlatformDialog(
+                                            context: context,
+                                            builder: (context) =>
+                                                BasicDialogAlert(
+                                              title: Text(
+                                                assignOrderOrderResponse[
+                                                    'title']!,
+                                                style: TextStyle(
+                                                  color:
+                                                      assignOrderOrderResponse[
+                                                                  'error'] ==
+                                                              true
+                                                          ? Colors.red
+                                                          : Colors.black,
+                                                ),
+                                              ),
+                                              content: Text(
+                                                assignOrderOrderResponse[
+                                                    'message']!,
+                                              ),
+                                              actions: <Widget>[
+                                                BasicDialogAction(
+                                                  title: const Text("OK"),
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                    Navigator.of(context)
+                                                        .pushAndRemoveUntil(
+                                                      MaterialPageRoute(
+                                                        builder: (BuildContext
+                                                                context) =>
+                                                            const HomeScreen(
+                                                          selectedRoute: 1,
+                                                        ),
+                                                      ),
+                                                      (Route route) => false,
+                                                    );
+                                                  },
+                                                ),
+                                              ],
+                                            ),
                                           );
                                         } else {
-                                          finishOrder(
+                                          var finishedOrderResponse =
+                                              await finishOrder(
                                             widget.order.orderId,
-                                            context,
+                                          );
+                                          if (!mounted) return;
+                                          Navigator.pop(context);
+                                          showPlatformDialog(
+                                            context: context,
+                                            builder: (context) =>
+                                                BasicDialogAlert(
+                                              title: Text(
+                                                finishedOrderResponse['title']!,
+                                                style: TextStyle(
+                                                  color: finishedOrderResponse[
+                                                              'error'] ==
+                                                          true
+                                                      ? Colors.red
+                                                      : Colors.black,
+                                                ),
+                                              ),
+                                              content: Text(
+                                                finishedOrderResponse[
+                                                    'message']!,
+                                              ),
+                                              actions: <Widget>[
+                                                BasicDialogAction(
+                                                  title: const Text("OK"),
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                    Navigator.of(context)
+                                                        .pushAndRemoveUntil(
+                                                      MaterialPageRoute(
+                                                        builder: (BuildContext
+                                                                context) =>
+                                                            const HomeScreen(
+                                                          selectedRoute: 1,
+                                                        ),
+                                                      ),
+                                                      (Route route) => false,
+                                                    );
+                                                  },
+                                                ),
+                                              ],
+                                            ),
                                           );
                                         }
                                       },
@@ -240,28 +336,30 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   for (var index = 0;
                       index < widget.order.services.length;
                       index++)
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                        height: 250,
-                        width: 350,
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.all(Radius.circular(15)),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              spreadRadius: 0,
-                              blurRadius: 5,
-                              offset: Offset(1, 1),
+                    Stack(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            height: 250,
+                            width: 350,
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(15),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  spreadRadius: 0,
+                                  blurRadius: 5,
+                                  offset: Offset(1, 1),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(40, 40, 0, 0),
-                          child: Stack(
-                            children: [
-                              Column(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(40, 40, 0, 0),
+                              child: Column(
                                 children: [
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.start,
@@ -287,8 +385,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text(widget
-                                              .order.services[index].name),
+                                          Text(
+                                              "${widget.order.services[index].quantity} ${widget.order.services[index].name}"),
                                           SizedBox(
                                             width: 200,
                                             child: Text(
@@ -309,31 +407,71 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                   )
                                 ],
                               ),
-                              Positioned(
-                                bottom: 0,
-                                right: 0,
-                                child: Container(
-                                  height: 45,
-                                  width: 120,
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue,
-                                    borderRadius: const BorderRadius.only(
-                                      bottomRight: Radius.circular(10),
-                                      topLeft: Radius.circular(10),
-                                    ),
-                                    image: DecorationImage(
-                                      fit: BoxFit.cover,
-                                      image: NetworkImage(
-                                        'http://$server/api/v1/files/${widget.order.services[index].imageName}',
-                                      ),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 0,
+                          right: 0,
+                          child: GestureDetector(
+                            onTap: () => {
+                              showPlatformDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  contentPadding: EdgeInsets.zero,
+                                  content: Image(
+                                    image: NetworkImage(
+                                      'http://$server/api/v1/files/${widget.order.services[index].imageName}',
                                     ),
                                   ),
                                 ),
                               )
-                            ],
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Container(
+                                height: 50,
+                                width: 150,
+                                decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  borderRadius: const BorderRadius.only(
+                                    bottomLeft: Radius.circular(10),
+                                  ),
+                                  image: DecorationImage(
+                                    fit: BoxFit.cover,
+                                    image: NetworkImage(
+                                      'http://$server/api/v1/files/${widget.order.services[index].imageName}',
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Container(
+                              height: 25,
+                              width: 25,
+                              color: Colors.blue,
+                              alignment: Alignment.center,
+                              child: Text(
+                                widget.order.services[index].menu[
+                                    widget.order.services[index].menu.length -
+                                        1],
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
                     ),
                 ],
               )
@@ -342,6 +480,58 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         ),
       ),
     );
+  }
+
+  Future<Map<String, dynamic>> assignOrderToUser(orderId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      var server = prefs.getString('server');
+      var userId = prefs.getString('userId');
+
+      final response = await http.post(
+        Uri.parse(
+            'http://$server/api/v1/orders/assign-order-to-user/$orderId/$userId'),
+      );
+
+      if (response.statusCode == 200) {
+        return {
+          'title': "Success",
+          "message": "Succssfully Completed",
+          "error": false
+        };
+      } else {
+        var error = json.decode(response.body);
+        return {'title': "Error", "message": error, "error": true};
+      }
+    } catch (e) {
+      return {'title': "Error", "message": '$e', "error": true};
+    }
+  }
+
+  Future<Map<String, dynamic>> finishOrder(orderId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      var server = prefs.getString('server');
+
+      final response = await http.post(
+        Uri.parse(
+          'http://$server/api/v1/orders/finish-order/$orderId',
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        return {
+          'title': "Success",
+          "message": "Succssfully Completed",
+          "error": false
+        };
+      } else {
+        var error = json.decode(response.body);
+        return {'title': "Error", "message": error, "error": true};
+      }
+    } catch (e) {
+      return {'title': "Error", "message": '$e', "error": true};
+    }
   }
 }
 
@@ -424,190 +614,6 @@ class OrderSizes extends StatelessWidget {
                 ],
               ),
             ),
-        ],
-      ),
-    );
-  }
-}
-
-void assignOrderToUser(orderId, context) async {
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    var server = prefs.getString('server');
-    var userId = prefs.getString('userId');
-    final response = await http.post(
-      Uri.parse(
-        'http://$server/api/v1/orders/assign-order-to-user/$orderId/$userId',
-      ),
-    );
-
-    if (response.statusCode == 200) {
-      showPlatformDialog(
-        context: context,
-        builder: (context) => BasicDialogAlert(
-          title: const Text("Error"),
-          content: const Text("Succssfully Completed"),
-          actions: <Widget>[
-            BasicDialogAction(
-              title: const Text("OK"),
-              onPressed: () {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(
-                    builder: (BuildContext context) => const HomeScreen(
-                      selectedRoute: 1,
-                    ),
-                  ),
-                  (Route route) => false,
-                );
-              },
-            ),
-          ],
-        ),
-      );
-    } else {
-      var error = json.decode(response.body);
-      showPlatformDialog(
-        context: context,
-        builder: (context) => BasicDialogAlert(
-          title: const Text(
-            "Error",
-            style: TextStyle(
-              color: Colors.red,
-            ),
-          ),
-          content: Text(error['message'] ?? 'Error'),
-          actions: <Widget>[
-            BasicDialogAction(
-              title: const Text("OK"),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
-      );
-    }
-  } catch (e) {
-    showPlatformDialog(
-      context: context,
-      builder: (context) => BasicDialogAlert(
-        title: const Text(
-          "Error",
-          style: TextStyle(
-            color: Colors.red,
-          ),
-        ),
-        content: Text("Error : $e"),
-        actions: <Widget>[
-          BasicDialogAction(
-            title: const Text("OK"),
-            onPressed: () {
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(
-                  builder: (BuildContext context) => const HomeScreen(
-                    selectedRoute: 1,
-                  ),
-                ),
-                (Route route) => false,
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-void finishOrder(orderId, context) async {
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    var server = prefs.getString('server');
-
-    final response = await http.post(
-      Uri.parse(
-        'http://$server/api/v1/orders/finish-order/$orderId',
-      ),
-    );
-
-    if (response.statusCode == 200) {
-      showPlatformDialog(
-        context: context,
-        builder: (context) => BasicDialogAlert(
-          title: const Text("Success"),
-          content: const Text("Succssfully Completed"),
-          actions: <Widget>[
-            BasicDialogAction(
-              title: const Text("OK"),
-              onPressed: () {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(
-                    builder: (BuildContext context) => const HomeScreen(
-                      selectedRoute: 1,
-                    ),
-                  ),
-                  (Route route) => false,
-                );
-              },
-            ),
-          ],
-        ),
-      );
-    } else {
-      var error = json.decode(response.body);
-      showPlatformDialog(
-        context: context,
-        builder: (context) => BasicDialogAlert(
-          title: const Text(
-            "Error",
-            style: TextStyle(
-              color: Colors.red,
-            ),
-          ),
-          content: Text(error['message'] ?? 'Error'),
-          actions: <Widget>[
-            BasicDialogAction(
-              title: const Text("OK"),
-              onPressed: () {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(
-                    builder: (BuildContext context) => const HomeScreen(
-                      selectedRoute: 1,
-                    ),
-                  ),
-                  (Route route) => false,
-                );
-              },
-            ),
-          ],
-        ),
-      );
-    }
-  } catch (e) {
-    showPlatformDialog(
-      context: context,
-      builder: (context) => BasicDialogAlert(
-        title: const Text(
-          "Error",
-          style: TextStyle(
-            color: Colors.red,
-          ),
-        ),
-        content: Text("Error : $e"),
-        actions: <Widget>[
-          BasicDialogAction(
-            title: const Text("OK"),
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(
-                  builder: (BuildContext context) => const HomeScreen(
-                    selectedRoute: 1,
-                  ),
-                ),
-                (Route route) => false,
-              );
-            },
-          ),
         ],
       ),
     );
